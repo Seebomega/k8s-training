@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stateful-pv0
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/pv0"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stateful-pv1
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/pv1"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stateful-pv2
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/pv2"
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: stateful-pv3
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/tmp/pv3"

@@ -1,0 +1,107 @@
+================================================================================================================
+											MINIKUBE
+================================================================================================================
+VirtualBox: 
+https://www.virtualbox.org/wiki/Downloads
+
+Minikube:
+https://kubernetes.io/docs/tasks/tools/install-minikube/
+
+Linux: curl -Lo minikube https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64 \
+  && chmod +x minikube
+
+Windows: Choco install minikube 
+
+MacOs: Brew install minikube
+
+================================================================================================================
+
+Commands: 
+
+minikube start
+minikube status
+minikube stop
+minikube delete
+
+================================================================================================================
+											KUBECTL
+================================================================================================================
+
+Linux: 
+```
+curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+chmod +x ./kubectl
+sudo mv ./kubectl /usr/local/bin/kubectl
+
+```
+OR
+
+```
+sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+```
+
+Windows:
+```
+choco install kubernetes-cli
+cd ~
+mkdir .kube
+cd .kube
+New-Item config -type file
+
+```
+
+MacOs:
+```
+brew install kubectl
+```
+
+
+================================================================================================================
+											k8s
+================================================================================================================
+
+Using vagrantfile
+
+```
+vagrant status
+```
+
+```
+vagrant ssh kubmaster/kubnode
+```
+
+
+```
+swapoff -a
+vim /etc/fstab
+apt-get update && apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+sudo add-apt-repository "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+sudo apt-get update && sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+systemctl enable kubelet
+```
+
+On the master:
+```
+kubeadm init --apiserver-advertise-address=192.168.0.40 --node-name $HOSTNAME --pod-network-cidr=10.244.0.0/16
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+```
+
+```
+kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
+sysctl net.bridge.bridge-nf-call-iptables=1
+```
+
+```
+kubeadm join [output of kubeadm init]
+```
+
+Edit /etc/hosts for outside reach of virtualbox

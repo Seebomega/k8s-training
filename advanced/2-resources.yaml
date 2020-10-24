@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busy-pod
+  namespace: test-lr
+spec:
+  containers:
+  - name: liveness
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - sleep 600
+    resources:
+      requests:
+        cpu: 600m
+        memory: 100M
+      limits:
+        cpu: 200m
+        memory: 200M

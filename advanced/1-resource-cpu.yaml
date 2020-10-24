@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busy-pod
+spec:
+  containers:
+  - name: liveness
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - sleep 600
+    resources:
+      requests:
+        cpu: 0.1
+      limits:
+        cpu: 1
+
+# +++++++++++++++++++++++ | OverUSe | +++++++++++++++++++++
+apiVersion: v1
+kind: Pod
+metadata:
+  name: busy-pod
+spec:
+  containers:
+  - name: liveness
+    image: busybox
+    args:
+    - /bin/sh
+    - -c
+    - sleep 600
+    resources:
+      requests:
+        cpu: 2
+      limits:
+        cpu: 2

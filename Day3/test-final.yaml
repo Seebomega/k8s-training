@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: super-cm
+  labels:
+    class: guineapig
+data:
+  key1: value1
+  test: echo
+  index.html: |
+    pod.val=nginx
+    deploy.replicas=3
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: super-secret
+  labels:
+    class: guineapig
+data:
+  user: dmFsdWUxCg==
+  password: Z3VpbmVhcGlnCg==
+  address: Z3VpbmVhcGlnCg==
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: awesome-service
+  labels:
+    class: guineapig
+spec:
+  type: NodePort
+  selector:
+    class: guineapig
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8888
+    targetPort: 80

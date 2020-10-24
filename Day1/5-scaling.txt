@@ -1,0 +1,9 @@
+kubectl exec -ti nginx-XXX -- /bin/bash 
+
+kubectl scale deployment nginx --replicas=2 
+
+Modify the second one
+
+
+kubectl autoscale deployment nginx --min 2 --max 5
+

@@ -1,0 +1,5 @@
+ kubectl create deploy nginx --image nginx
+
+ kubectl create service nodeport nginx --tcp=8888:80
+
+ curl http://target:8888 

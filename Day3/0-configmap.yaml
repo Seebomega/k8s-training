@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-cm
+data:
+  key1: value1
+  test: echo
+  multiple: |
+    pod.val=nginx
+    deploy.replicas=3
+immutable: true
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-secret
+data:
+  user: dmFsdWUxCg==
+  password: Z3VpbmVhcGlnCg==

@@ -1,0 +1,70 @@
+We want to create the following manifests for our application: 
+
+All the resources should have the label class=kube-basics
+
+
+=> 1 secret
+
+	Name: super-secret
+	At least 3 keys (USER, PASSWORD, TOKEN)
+
+=> 1 ConfigMap
+	Name: super-cm
+	At least 3 keys (index.html(multiline), ENVIRONMENT, config.txt)
+
+=> 1 service type NodePort that targets our label (Leave the port attribution random)
+	name: awesome-service 
+	Expose 8888 redirect to 80
+
+=> 1 Deployment
+	Name: awesome-deployment
+	10 Replicas
+	Strategy RollingUpdate
+		1 Surge
+		2 unavailable
+	1 EmptyDir volume (name: shared-empty-vol)
+	2 containers: 
+		- 1 busybox 
+			Change entrypoint command by "while true;do date > /tmp/emptyvolume.html && sleep 1;done"
+			Mount the secrets USER/PASSWORD as Env var -> USERNAME/PASSWD
+			Mount the secret TOKEN as file in /tmp/token.txt
+			1 volume emptyDir mounted in /tmp/emptyvolume.html
+		- 1 nginx:1.17
+			Mount CM index.html as Volume file in /usr/share/nginx/html
+			Mount CM config.txt as Volume file in /home/.config
+			Mount CM ENVIRONMENT as ENV var
+			Use the same emptyDir volume mounted in /usr/share/nginx/html/volume/index.html
+			Expose the port 80 of this container
+			1 LivenessProbe
+				-> HttpGet on /volume/index.html
+				initial delay 20 s
+				successThreshold 2
+				every 6 seonds
+			1 ReadinessProbe
+				-> execCmd cat /home/.config
+				initial delay 10 s
+				failureThreshold 2
+				every 10 seconds
+	
+	
+=====================
+
+=> 1 Cron job 
+	Triggers every Minutes
+	use a pod with a container that have an image busybox
+	the job is to execute a wget on the service awesome-service:8888/volume/index.html
+	6 completions
+	2 in parallel
+	FORBID concurrency policy
+	Never restart on failure
+
+
+================
+
+Once this is done we want to perform a rolling update of our application 
+
+Moving to use nginx 1.19 and using annotations 
+
+
+Then finally perform an undo on the deployment to fallback
+

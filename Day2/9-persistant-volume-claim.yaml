@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  volumeMode: Filesystem
+  storageClassName: manual
+  resources:
+    requests:
+      storage: 4G
+  # selector:
+  #   matchLabels:
+  #     release: "stable"
+  #   matchExpressions:
+  #     - {key: environment, operator: In, values: [dev]}
