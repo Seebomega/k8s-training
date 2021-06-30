@@ -9,8 +9,11 @@ spec:
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 5
   jobTemplate:
+    # -------JOB YAML -------------
     spec:
+      completions: 6
       template:
+        # -------POD YAML -------------
         spec:
           containers:
           - name: hello

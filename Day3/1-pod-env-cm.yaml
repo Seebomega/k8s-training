@@ -13,17 +13,17 @@ spec:
     envFrom: #Use all the CM as env
     - configMapRef:
         name: my-cm
-    # env:
-    # - name: KEY1
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: my-cm
-    #       key: key1
-    # - name: TEST
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: my-cm
-    #       key: test
+    env:
+    - name: KEY1
+      valueFrom:
+        configMapKeyRef:
+          name: my-cm
+          key: key1
+    - name: TEST
+      valueFrom:
+        configMapKeyRef:
+          name: my-cm
+          key: test
 
 ---
 apiVersion: v1
@@ -41,17 +41,17 @@ spec:
     envFrom: #Use all the Secret as env
     - secretRef:
         name: my-secret
-    # env:
-    # - name: USER
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: my-secret
-    #       key: user
-    # - name: PWD
-    #   valueFrom:
-    #     configMapKeyRef:
-    #       name: my-secret
-    #       key: password
+    env:
+    - name: USER
+      valueFrom:
+        secretKeyRef:
+          name: my-secret
+          key: user
+    - name: PWD
+      valueFrom:
+        secretKeyRef:
+          name: my-secret
+          key: password
 ---
 apiVersion: v1
 kind: Pod
@@ -71,10 +71,10 @@ spec:
     env:
     - name: USER
       valueFrom:
-        secretKeyRef:
-          name: my-secret
-          key: user
-    - name: PWD
+        configMapKeyRef:
+          name: my-cm
+          key: test
+    - name: PSSWD
       valueFrom:
         secretKeyRef:
           name: my-secret

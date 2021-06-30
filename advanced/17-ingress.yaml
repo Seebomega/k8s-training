@@ -12,7 +12,7 @@ spec:
           backend:
             serviceName: nginx-service
             servicePort: 80
-  - host: bckd2.org #by host header
+  - host: guinea-pig.org #by host header
     http: 
       paths:
       - path: /

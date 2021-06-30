@@ -6,8 +6,8 @@ spec:
   containers:
   - name: nginx
     image: nginx
-    ports:
-    - containerPort: 8888
+    # ports:
+    # - containerPort: 8888
     volumeMounts:
     - mountPath: /usr/share/nginx/html
       name: my-ed-volume

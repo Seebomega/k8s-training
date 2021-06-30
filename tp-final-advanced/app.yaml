@@ -1,0 +1,396 @@
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: picasso
+  labels:
+    inspiration: nulle
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: painters
+  namespace: picasso
+  labels:
+    inspiration: nulle
+data:
+  color: blue
+  canvas: blank
+  index.html: |
+    chagall
+    picasso
+    dali
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: access
+  namespace: picasso
+  labels:
+    inspiration: nulle
+data:
+  username: Z3VzdGF2
+  password: am9jb25kZQ==
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mona-lisa
+  namespace: picasso
+  labels:
+    inspiration: nulle
+spec:
+  limits:
+    - min:
+        memory: 1M
+        cpu: 10m
+      max:
+        memory: 100M
+        cpu: 1
+      default:
+        memory: 20M
+        cpu: 100m
+      defaultRequest:
+        memory: 10M
+        cpu: 10m
+      type: Container
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: guernica
+  namespace: picasso
+  labels:
+    inspiration: nulle
+
+spec:
+  hard:
+    limits.memory: 1.5G
+    limits.cpu: 1.5
+    requests.memory: 1G
+    requests.cpu: 1
+    pods: 15
+    secrets: 3
+    services: 5
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name:  the-kiss
+  namespace: picasso
+  labels:
+    inspiration: nulle
+
+spec:
+  selector:
+    painter: dali
+  type: ClusterIP
+  ports:
+  - name:  service-web-front
+    port:  8080
+    targetPort:  80
+    
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-painters
+  namespace: picasso
+  labels:
+    inspiration: nulle
+    painter: dali
+  annotations:
+    kubernetes.io/change-cause: "v1.17"
+spec:
+  replicas: 5
+  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+  selector:
+    matchLabels:
+      painter: dali
+
+  template:
+    metadata:
+      labels:
+        painter: dali
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: inspiration
+                  operator: In
+                  values:
+                  - nulle
+              topologyKey: kubernetes.io/hostname
+      volumes:
+      - name: index
+        configMap:
+          name: painters
+          items:
+            - key: index.html
+              path: index.html
+      containers:
+      - name: nginx-container
+        image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          privileged: false
+          allowPrivilegeEscalation: false
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 20
+        resources:
+          requests:
+            cpu: 10m
+            memory: 5M
+          limits:
+            cpu: 100m
+            memory: 10M
+        volumeMounts:
+          - name: index
+            mountPath: /usr/share/nginx/html
+        env:
+          - name: COLOR
+            valueFrom:
+              configMapKeyRef:
+                name: painters
+                key: color
+          - name: USER
+            valueFrom:
+              secretKeyRef:
+                name: access
+                key: username
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: web-painters-hpa
+  namespace: picasso
+  labels:
+    inspiration: nulle
+spec:
+  maxReplicas: 8
+  minReplicas: 2
+  targetCPUUtilizationPercentage: 30
+  scaleTargetRef:
+    kind: Deployment
+    name: web-painters
+    apiVersion: apps/v1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brush-0
+  labels:
+    inspiration: nulle
+spec:
+  capacity:
+    storage: 2G
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: olympia
+  hostPath:
+    path: /tmp/brush-0
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brush-1
+  labels:
+    inspiration: nulle
+spec:
+  capacity:
+    storage: 2G
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: olympia
+  hostPath:
+    path: /tmp/brush-1
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brush-2
+  labels:
+    inspiration: nulle
+spec:
+  capacity:
+    storage: 2G
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: olympia
+  hostPath:
+    path: /tmp/brush-2
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brush-3
+  labels:
+    inspiration: nulle
+spec:
+  capacity:
+    storage: 2G
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: olympia
+  hostPath:
+    path: /tmp/brush-3
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: brush-4
+  labels:
+    inspiration: nulle
+spec:
+  capacity:
+    storage: 2G
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: olympia
+  hostPath:
+    path: /tmp/brush-4
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: museum-service
+  namespace: picasso
+  labels:
+    inspiration: nulle
+spec:
+  ports:
+  - port: 8181
+    targetPort: 80
+  clusterIP: None
+  selector:
+    painter: van-gogh
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: museum
+  namespace: picasso
+  labels:
+    inspiration: nulle
+
+spec:
+  serviceName: museum-service
+  replicas: 3
+  selector:
+    matchLabels:
+      painter: van-gogh
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 1
+  volumeClaimTemplates:
+    - metadata:
+        name: www-painters
+      spec:
+        storageClassName: olympia
+        accessModes:
+          - ReadWriteMany
+        resources:
+          requests:
+            storage: 1G
+
+  template:
+    metadata:
+      labels:
+        painter: van-gogh
+    spec:
+      tolerations:
+        - key: "maintenance"
+          operator: "Exists"
+          effect: "NoExecute"
+        - key: node-role.kubernetes.io/master
+          operator: "Exists"
+          effect: NoSchedule
+      containers:
+        - name: nginx
+          image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
+          ports:
+            - containerPort: 80
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: www-painters
+            - mountPath: /usr/share/nginx/html/secretvolume
+              name: emptydir
+
+        - name: busybox
+          image: k8s.gcr.io/busybox
+          securityContext:
+            runAsGroup: 1000
+            allowPrivilegeEscalation: false
+            privileged: false
+          volumeMounts:
+            - mountPath: /home/secretvolume
+              name: emptydir
+          command: ["/bin/sh"]
+          args: ["-c", "env; while true; do date  > /home/secretvolume/emptyvolume.html && sleep 1; done"]
+
+      volumes:
+        - name: emptydir
+          emptyDir: {}
+
+---
+
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: ingress-painters
+  namespace: picasso
+  labels:
+    inspiration: nulle
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+        - path: /artists
+          backend:
+            serviceName: the-kiss
+            servicePort: 8080
+    host: famous-painters.kube
+
+---

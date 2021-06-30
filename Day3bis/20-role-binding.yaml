@@ -4,9 +4,10 @@ metadata:
   name: read-pods
   namespace: default
 subjects:
-- kind: User
-  name: sderoche
-  apiGroup: rbac.authorization.k8s.io
+- kind: ServiceAccount
+  name: demo-sa
+  namespace: default
+  #apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: pod-reader
