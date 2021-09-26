@@ -7,7 +7,7 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: nginx
+    image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
     ports:
     - containerPort: 80
     volumeMounts:
@@ -16,10 +16,10 @@ spec:
   volumes:
   - name: my-cm-volume
     configMap:
-      name: cm-dir
-      # items: # if this is not precised it will be a dir if you create a cm from multiple files
-      # - key: multiple
-      #   path: index.html
+      name: my-cm
+      items: # if this is not precised it will be a dir if you create a cm from multiple files
+      - key: test.html
+        path: index.html
 
 ---
 
@@ -45,7 +45,7 @@ spec:
       items: # if this is not precised it will be a dir if you create a cm from multiple files
       - key: multiple
         path: index.html
-      - key: key1
+      - key: dragon
         path: test.html
 
 --- 
@@ -74,3 +74,163 @@ spec:
         path: index.html
       - key: password
         path: test.html
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    class: pokemon
+  name: raichu
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: super-secret
+  labels:
+    class: pokemon
+  namespace: raichu
+data:
+  USER: dmFsdWUxCg==
+  PASSWORD: Z3VpbmVhcGlnCg==
+  TOKEN: Z3VpbmVhcGlnCg==
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: super-cm
+  labels:
+    class: pokemon
+  namespace: raichu
+data:
+  index.html: |
+    <h1>RAICHU INDEX</h1><br />
+    Ligne2
+  ENVIRONMENT: staging
+  config.txt: |
+    env=staging
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    class: pokemon
+  name: awesome-service
+  namespace: raichu
+spec:
+  ports:
+  - name: 9999-80
+    port: 9999
+    protocol: TCP 
+    targetPort: 80
+  selector:
+    class: pokemon
+  type: NodePort
+---  
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awesome-deployment
+  labels:
+    class: pokemon
+  namespace: raichu
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 1
+  selector:
+    matchLabels:
+      class: pokemon
+  template:
+    metadata:
+      labels:
+        class: pokemon
+    spec:
+      volumes:
+      - name: shared-empty-vol
+        emptyDir: {}
+      - name: super-secret-vol
+        secret:
+           secretName: super-secret
+           items:
+           - key: TOKEN
+             path: token.txt
+      - name: super-cm-vol
+        configMap:
+          name: super-cm
+          items:
+          - key: index.html
+            path: index.html
+      - name: super-cm-vol2
+        configMap:
+          name: super-cm
+          items:
+          - key: config.txt
+            path: .config
+      containers:
+      - name: busy-container
+        image: k8s.gcr.io/busybox
+        imagePullPolicy: Always
+        command: ["/bin/sh"]
+        args: ["-c", "env; while true; do date > /tmp/emptyvolume.html && sleep 1; done"]
+        volumeMounts:
+        - mountPath: /tmp
+          name: shared-empty-vol
+        - mountPath: /tmp/token
+          name: super-secret-vol
+        env:
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: super-secret
+              key: USER
+        - name: PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: super-secret
+              key: PASSWORD
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/token/token.txt
+          initialDelaySeconds: 5
+          failureThreshold: 1
+          periodSeconds: 20
+      - name: nginx-container
+        image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /volume/emptyvolume.html
+            port: 80
+          initialDelaySeconds: 20
+          successThreshold: 1
+          periodSeconds: 6
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /home/config/.config
+          initialDelaySeconds: 10
+          failureThreshold: 2
+          periodSeconds: 10
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: super-cm-vol
+        - mountPath: /home/config
+          name: super-cm-vol2
+        - mountPath: /usr/share/nginx/html/volume
+          name: shared-empty-vol
+        env:
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+              name: super-cm
+              key: ENVIRONMENT

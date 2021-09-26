@@ -1,64 +1,68 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: redis-cache
+  name: nginx-deployment
+  labels:
+    app: nginx
 spec:
+  replicas: 2
   selector:
     matchLabels:
-      app: store
-  replicas: 2
+      app: nginx
   template:
     metadata:
       labels:
-        app: store
+        app: nginx
     spec:
+      containers:
+      - name: nginx
+        image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:latest
       affinity:
         podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - store
-            topologyKey: kubernetes.io/hostname
-      containers:
-      - name: redis-server
-        image: redis:3.2-alpine
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                    - nginx
+              topologyKey: kubernetes.io/hostname
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+           - labelSelector:
+               matchExpressions:
+                 - key: app
+                   operator: In
+                   values:
+                   - redis
+             topologyKey: kubernetes.io/hostname
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web-server
+  name: redis-cache
+  labels:
+    app: redis
 spec:
+  replicas: 2
   selector:
     matchLabels:
-      app: web-store
-  replicas: 2
+      app: redis
   template:
     metadata:
       labels:
-        app: web-store
+        app: redis
     spec:
+      containers:
+      - name: redis
+        image: redis:3.2-alpine
       affinity:
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - web-store
-            topologyKey: "kubernetes.io/hostname"
-        podAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-          - labelSelector:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - store
-            topologyKey: "kubernetes.io/hostname"
-      containers:
-      - name: web-app
-        image: nginx:1.16-alpine
+            - labelSelector:
+                   matchExpressions:
+                     - key: app
+                       operator: In
+                       values:
+                         - redis
+              topologyKey: kubernetes.io/hostname
