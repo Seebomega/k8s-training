@@ -14,7 +14,7 @@ spec:
               operator: In
               values:
               - high
-          topologyKey: kubernetes.io/os
+          topologyKey: kubernetes.io/hostname
   containers:
   - name: with-pod-affinity
     image: k8s.gcr.io/pause:2.0

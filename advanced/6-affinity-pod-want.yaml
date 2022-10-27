@@ -8,7 +8,7 @@ spec:
       preferredDuringSchedulingIgnoredDuringExecution:
       - labelSelector:
           matchExpressions:
-          - key: friend
+          - key: friendly
             operator: In
             values:
             - high

@@ -14,7 +14,7 @@ spec:
   volumes:
   - name: my-cm-volume
     configMap:
-      name: cm-dir
+      name: my-cm
 
 ---
 

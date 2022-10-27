@@ -1,7 +1,9 @@
 We want to create the following manifests for our application: 
 
-All the resources should have the label class=kube-basics
+All the resources should have the label class=pokemon and be placed in the namespace that we are creating
 
+=> 1 Namespace
+	name: raichu
 
 => 1 secret
 
@@ -14,7 +16,7 @@ All the resources should have the label class=kube-basics
 
 => 1 service type NodePort that targets our label (Leave the port attribution random)
 	name: awesome-service 
-	Expose 8888 redirect to 80
+	Expose 9999 redirect to 80
 
 => 1 Deployment
 	Name: awesome-deployment
@@ -25,11 +27,18 @@ All the resources should have the label class=kube-basics
 	1 EmptyDir volume (name: shared-empty-vol)
 	2 containers: 
 		- 1 busybox 
-			Change entrypoint command by "while true;do date > /tmp/emptyvolume.html && sleep 1;done"
+			name: busy-container
+			Change entrypoint command by "env;while true;do date > /tmp/emptyvolume.html && sleep 1;done"
 			Mount the secrets USER/PASSWORD as Env var -> USERNAME/PASSWD
 			Mount the secret TOKEN as file in /tmp/token.txt
 			1 volume emptyDir mounted in /tmp/emptyvolume.html
+			1 ReadinessProbe
+				-> execCmd cat /tmp/token.txt
+				initial delay 5 s
+				failureThreshold 1
+				every 20 seconds
 		- 1 nginx:1.17
+			name: nginx-container
 			Mount CM index.html as Volume file in /usr/share/nginx/html
 			Mount CM config.txt as Volume file in /home/.config
 			Mount CM ENVIRONMENT as ENV var
@@ -50,9 +59,11 @@ All the resources should have the label class=kube-basics
 =====================
 
 => 1 Cron job 
+	name: awesome-job
 	Triggers every Minutes
 	use a pod with a container that have an image busybox
-	the job is to execute a wget on the service awesome-service:8888/volume/index.html
+	the job is to execute a wget on the service awesome-service
+	to grabe the /volume/index.html
 	6 completions
 	2 in parallel
 	FORBID concurrency policy
@@ -64,7 +75,6 @@ All the resources should have the label class=kube-basics
 Once this is done we want to perform a rolling update of our application 
 
 Moving to use nginx 1.19 and using annotations 
-
 
 Then finally perform an undo on the deployment to fallback
 

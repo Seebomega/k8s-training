@@ -23,7 +23,7 @@ spec:
   - metadata:
    name: web
  spec:
-   storageClassNAme: manual
+   storageClassName: manual
    accessModes:
    - ReadWriteOnce
    resources:

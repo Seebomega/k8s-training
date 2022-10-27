@@ -17,5 +17,5 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: nginx
+        image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
         imagePullPolicy: IfNotPresent

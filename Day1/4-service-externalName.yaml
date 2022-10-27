@@ -18,3 +18,17 @@ spec:
   - port: 443
   externalName: www.atomos.fr
   type: ExternalName
+
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: external-service
+  namespace: test
+spec:
+  type: ExternalName
+  externalName: nginx.default.svc.cluster.local
+  ports:
+  - port: 8888

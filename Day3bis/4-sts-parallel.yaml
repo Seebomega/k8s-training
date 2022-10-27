@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: my-sts
+  annotations:
+    kubernetes.io/change-cause: "bump Nginx 1.17"
 spec:
   serviceName: nginx
   podManagementPolicy: Parallel
@@ -16,9 +18,7 @@ spec:
   template:
     metadata:
       labels:
-        app: nginx
-      annotations:
-        kubernetes.io/change-cause: "bump Nginx 1.17"
+        app: nginx    
     spec:
       containers:
       - name: nginx

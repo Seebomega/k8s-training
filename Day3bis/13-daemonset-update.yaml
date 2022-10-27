@@ -5,6 +5,8 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: fluentd-logging
+  annotations:
+    kubernetes.io/change-cause: "v2.6.0"
 spec:
   selector:
     matchLabels:
@@ -12,7 +14,8 @@ spec:
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxUnavailable: 0
+      maxSurge: 1
   template:
     metadata:
       labels:
@@ -22,6 +25,7 @@ spec:
       # this toleration is to have the daemonset runnable on master nodes
       # remove it if your masters can't run pods
       - key: node-role.kubernetes.io/master
+        operator: Exists
         effect: NoSchedule
       containers:
       - name: fluentd-elasticsearch
@@ -46,3 +50,4 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
+

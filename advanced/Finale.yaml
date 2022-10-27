@@ -1,1 +1,184 @@
-Finale.yaml
+All resources should have a label class=guineapig
+
+We need:
+  - Storage class "normal"
+  - Persistent volumes pv0 - 1 - 2 - 3 - 4 (mounted on hostpath /tmp/pvX)
+    Retain policy Recycle
+    storageClassName normal
+  - A headless service that target our label
+  - A service account nginx
+  - A clusterRole that have access to all ressources, only on the verbs get/list/watch
+  - A clusterRoleBinding to bind the SA and the clusterRole
+  - Statefulset of 2 replicas of the image k8s.gcr.io/nginx-slim:0.8
+    expose port 80
+    mount in /usr/share/nginx/html
+    volumeclaim template -> match our PVs
+    use our service account to run pods
+    Rolling update strategy
+    Pod anti affinity prefer not to run on same node
+
+    =========
+    scale up to 5 replicas
+    add partition update to 3
+    update to image nginx
+    =========
+
+--------------------
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    class: kube-yugioh
+  name: trap-card
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  namespace: trap-card
+  labels:
+    class: kube-yugioh
+  name: super-secret
+data:
+  USER: a2FpYmENCg== #kaiba
+  PASSWORD: Ymx1ZURyYWdvbg0K
+  TOKEN: a3VyaWJvaAo=
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    class: kube-yugioh
+  namespace: trap-card
+  name: super-cm
+data:
+  index.html: |
+    hello
+    world
+  ENVIRONMENT: shadow realm
+  config.txt: |
+    port
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    class: kube-yugioh
+  namespace: trap-card
+  name: awesome-service
+spec:
+  type: NodePort
+  ports:
+  - name: aa
+    protocol: TCP
+    port: 9999
+    targetPort: 80
+  selector:
+    class: kube-yugioh
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: awesome-deployment
+  labels:
+    class: kube-yugioh
+  namespace: trap-card
+spec:
+  replicas: 10
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 2
+      maxSurge: 1
+  selector:
+    matchLabels:
+      class: kube-yugioh
+  template:
+    metadata:
+      labels:
+        class: kube-yugioh
+    spec:
+      volumes:
+      - name: shared-empty-vol
+        emptyDir: {}
+      - name: super-secret-vol
+        secret:
+           secretName: super-secret
+           items:
+           - key: TOKEN
+             path: token.txt
+      - name: super-cm-vol
+        configMap:
+          name: super-cm
+          items:
+          - key: index.html
+            path: index.html
+      - name: super-cm-vol2
+        configMap:
+          name: super-cm
+          items:
+          - key: config.txt
+            path: .config
+      containers:
+      - name: busy-container
+        image: k8s.gcr.io/busybox
+        imagePullPolicy: Always
+        command: ["/bin/sh"]
+        args: ["-c", "env; while true; do date > /tmp/emptyvolume.html && sleep 1; done"]
+        volumeMounts:
+        - mountPath: /tmp
+          name: shared-empty-vol
+        - mountPath: /tmp/token
+          name: super-secret-vol
+        env:
+        - name: USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: super-secret
+              key: USER
+        - name: PASSWD
+          valueFrom:
+            secretKeyRef:
+              name: super-secret
+              key: PASSWORD
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /tmp/token/token.txt
+          initialDelaySeconds: 5
+          failureThreshold: 1
+          periodSeconds: 20
+      - name: nginx-container
+        image: nginx:1.17
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        livenessProbe:
+          httpGet:
+            path: /volume/emptyvolume.html
+            port: 80
+          initialDelaySeconds: 20
+          successThreshold: 1
+          periodSeconds: 6
+        readinessProbe:
+          exec:
+            command:
+            - cat
+            - /home/config/.config
+          initialDelaySeconds: 10
+          failureThreshold: 2
+          periodSeconds: 10
+        volumeMounts:
+        - mountPath: /usr/share/nginx/html
+          name: super-cm-vol
+        - mountPath: /home/config
+          name: super-cm-vol2
+        - mountPath: /usr/share/nginx/html/volume
+          name: shared-empty-vol
+        env:
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+              name: super-cm
+              key: ENVIRONMENT

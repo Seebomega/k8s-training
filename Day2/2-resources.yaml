@@ -6,7 +6,7 @@ metadata:
 spec:
   containers:
   - name: liveness
-    image: busybox
+    image: busybox:latest
     args:
     - /bin/sh
     - -c

@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: liveness
-    image: busybox
+    image: k8s.gcr.io/busybox
     args:
     - /bin/sh
     - -c
@@ -24,7 +24,7 @@ metadata:
 spec:
   containers:
   - name: liveness
-    image: busybox
+    image: k8s.gcr.io/busybox
     args:
     - /bin/sh
     - -c
@@ -34,3 +34,4 @@ spec:
         memory: 2G
       limits:
         memory: 2G
+        

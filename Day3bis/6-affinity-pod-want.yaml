@@ -6,13 +6,15 @@ spec:
   affinity:
     podAffinity:
       preferredDuringSchedulingIgnoredDuringExecution:
-      - labelSelector:
-          matchExpressions:
-          - key: friendly
-            operator: In
-            values:
-            - high
-        topologyKey: kubernetes.io/os
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: friendly
+              operator: In
+              values:
+              - high
+          topologyKey: kubernetes.io/os
   containers:
   - name: with-pod-affinity
     image: k8s.gcr.io/pause:2.0

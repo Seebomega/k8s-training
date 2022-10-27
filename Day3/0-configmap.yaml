@@ -3,6 +3,15 @@ kind: ConfigMap
 metadata:
   name: my-cm
 data:
+  index.html: |
+    kfhdfhsdf
+    dfSD
+    fSDf
+    fSDf
+  test.html: |
+    sdfjsdfjsdf
+    sdsDgSDfSDf
+    sDfSDfSDF
   key1: value1
   test: echo
   multiple: |

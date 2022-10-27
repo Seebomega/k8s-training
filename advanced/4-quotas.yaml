@@ -1,3 +1,17 @@
+
+    # count/persistentvolumeclaims
+    # count/services
+    # count/secrets
+    # count/configmaps
+    # count/replicationcontrollers
+    # count/deployments.apps
+    # count/replicasets.apps
+    # count/statefulsets.apps
+    # count/jobs.batch
+    # count/cronjobs.batch
+    # count/deployments.extensions
+
+---
 apiVersion: v1
 kind: ResourceQuota
 metadata:
@@ -9,9 +23,7 @@ spec:
     limits.cpu: 2
     limits.memory: 2G
     pods: 3
-
 ---
-
 apiVersion: v1
 kind: Pod
 metadata:
@@ -31,3 +43,111 @@ spec:
       limits:
         cpu: 800m
         memory: 800M
+--- # kubectl describe quota
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: pods-high
+  spec:
+    hard:
+      cpu: "2"
+      memory: 2Gi
+      pods: "10"
+    scopeSelector:
+      matchExpressions:
+      - operator : In
+        scopeName: priorityClassName
+        values: ["high"]
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: pods-medium
+  spec:
+    hard:
+      cpu: "1"
+      memory: 1Gi
+      pods: "5"
+    scopeSelector:
+      matchExpressions:
+      - operator : In
+        scopeName: priorityClassName
+        values: ["medium"]
+- apiVersion: v1
+  kind: ResourceQuota
+  metadata:
+    name: pods-low
+  spec:
+    hard:
+      cpu: "0.5"
+      memory: 512Mi
+      pods: "5"
+    scopeSelector:
+      matchExpressions:
+      - operator : In
+        scopeName: priorityClassName
+        values: ["low"]
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: high-priority
+spec:
+  containers:
+  - name: high-priority
+    image: busybox
+    command: ["/bin/sh"]
+    args: ["-c", "while true; do echo hello; sleep 10;done"]
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "500m"
+      limits:
+        memory: "1Gi"
+        cpu: "500m"
+  PriorityClass: high
+--- # kubectl describe quota
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: compute-resources #kubectl describe quota compute-resources
+spec:
+  hard:
+    pods: "4"
+    requests.cpu: "1"
+    requests.memory: 1Gi
+    limits.cpu: "2"
+    limits.memory: 2Gi
+    requests.nvidia.com/gpu: 4
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: object-counts #kubectl describe quota object-counts
+spec:
+  hard:
+    configmaps: "10"
+    persistentvolumeclaims: "4"
+    replicationcontrollers: "20"
+    secrets: "10"
+    services: "10"
+    services.loadbalancers: "2"
+---
+# kubectl create namespace test-q
+
+# kubectl create quota test --hard=count/deployments.extensions=2,count/replicasets.extensions=4,count/pods=3,count/secrets=4 --namespace=test-q
+
+# kubectl create deployment nginx --image=nginx --replicas=2 --namespace=test-q
+
+# kubectl describe quota --namespace=test-q
+
+# Name:                         test
+# Namespace:                    test-q
+# Resource                      Used  Hard
+# --------                      ----  ----
+# count/deployments.extensions  1     2
+# count/pods                    2     3
+# count/replicasets.extensions  1     4
+# count/secrets                 1     4

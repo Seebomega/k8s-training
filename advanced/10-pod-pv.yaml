@@ -18,9 +18,9 @@ metadata:
 spec:
   containers:
   - name: nginx
-    image: nginx
+    image: registry.gitlab.onlineterroir.com/omega/public-reg/nginx:1.17
     ports:
-    - containerPort: 8888
+    - containerPort: 80
     volumeMounts:
     - mountPath: /usr/share/nginx/html
       name: my-pvc-volume

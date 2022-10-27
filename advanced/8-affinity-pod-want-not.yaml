@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: with-pod-affinity
+  name: with-pod-anti-affinity-want
 spec:
   affinity:
     podAntiAffinity:
@@ -14,7 +14,7 @@ spec:
               operator: In
               values:
               - high
-          topologyKey: kubernetes.io/os
+          topologyKey: kubernetes.io/hostname
   containers:
   - name: with-pod-affinity
     image: k8s.gcr.io/pause:2.0

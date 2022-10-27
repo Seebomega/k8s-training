@@ -10,5 +10,4 @@ spec:
     protocol: TCP
     port: 8888
     targetPort: 80
-  clusterIP: 10.96.0.30
   type: ClusterIP
